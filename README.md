@@ -1,5 +1,57 @@
 
-#Test ---- Hello from Tessa!
+# Facial Expression Recognition
+## Setup
+
+### 1. Install uv
+
+Install `uv`
+
+### 2. Sync dependencies
+
+From the project root run: `uv sync`
+
+## 3. Kaggle setup
+
+This project downloads the dataset automatically through the Kaggle API. 
+Therefore you have to make sure to take the steps on Kaggle API. I think it places your key in ~/.kaggle or something
+
+From Kaggle:
+``` mkdir -p ~/.kaggle && echo {TOKEN} > ~/.kaggle/access_token && chmod 600 ~/.kaggle/access_token ```
+
+## 4. Dataset Preparation
+
+Run: `uv run python -m Facial_Expression_Recognition.data.data`
+
+
+This pipeline automatically:
+
+- downloads the dataset
+- extracts the .7z archives
+- builds a stratified metadata split
+- runs MTCNN face detection
+- crops and preprocesses faces
+- converts images to grayscale
+- resizes images to 64x64
+- generates the final training dataset
+
+Beware, the first run can take a while because preprocessing is expensive. All and all it takes roughly an hour on Habrok 
+Every run after will use the preprocessed data (default=`~/.cache/kaggle/datasets/...`)
+If it differs for your system please change it accordingly. I did not feel like making it an env variable
+
+
+## 5. Training
+
+To train the CNN model:
+
+`uv run Facial_Expression_Recognition/train.py --model cnn`
+
+To train the EfficientNet model:
+
+`uv run Facial_Expression_Recognition/train.py --model effnet`
+
+
+Saved model weights are stored in `/models`
+
 
 # Applied ML Template 🛠️
 

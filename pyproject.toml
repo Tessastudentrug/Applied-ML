@@ -1,0 +1,27 @@
+[project]
+name = "applied-ml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11, <3.12"
+dependencies = [
+    "kagglehub>=1.0.1",
+    "mtcnn>=1.0.0",
+    "opencv-python>=4.13.0.92",
+    "pandas>=3.0.3",
+    "pre-commit>=4.6.0",
+    "py7zr>=1.1.0",
+    "scikit-learn>=1.8.0",
+    "tensorflow>=2.21.0",
+    "torch>=2.12.0",
+    "torchvision>=0.27.0",
+]
+
+[tool.ruff]
+
+[[tool.uv.index]]
+url = "https://download.pytorch.org/whl/cu126"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "N", "I", "B", "UP"] # Currently ignore docstring
+ignore = ["N999"]
