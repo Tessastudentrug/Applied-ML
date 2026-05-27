@@ -3,8 +3,8 @@ import os
 import kagglehub
 from PIL import Image
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
-from features.preprocessing import get_grayscale_transform
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
+from features.preprocessing import get_train_transform, get_eval_transform
 
 from features.ExpW_preprocessor import ExpWPreprocessor
 import py7zr
@@ -102,21 +102,24 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
         input_dir = preprocessor.find_input_dir()
         preprocessor.run(images, input_dir)
 
-    transform = get_grayscale_transform()
+    # 1. Create TWO datasets: one with train augmentations, one with clean eval rules
+    dataset_train = FERImageDataset(dataset_dir, transform=get_train_transform())
+    dataset_eval = FERImageDataset(dataset_dir, transform=get_eval_transform())
 
-    dataset = FERImageDataset(dataset_dir, transform=transform)
+    # 2. Calculate the split sizes
+    total_size = len(dataset_train)
+    train_size = int(train_split * total_size)
+    val_size = int(val_split * total_size)
+    test_size = total_size - train_size - val_size
 
-    train_size = int(train_split * len(dataset))
-    val_size = int(val_split * len(dataset))
-    test_size = len(dataset) - train_size - val_size
-
+    # 3. Generate random, shuffled indices
     generator = torch.Generator().manual_seed(42)
+    indices = torch.randperm(total_size, generator=generator).tolist()
 
-    train_dataset, val_dataset, test_dataset = random_split(
-        dataset,
-        [train_size, val_size, test_size],
-        generator=generator,
-    )
+    # 4. Create the subsets using the correct parent dataset!
+    train_dataset = Subset(dataset_train, indices[:train_size])
+    val_dataset = Subset(dataset_eval, indices[train_size:train_size+val_size])
+    test_dataset = Subset(dataset_eval, indices[train_size+val_size:])
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
@@ -155,7 +158,8 @@ if __name__ == "__main__":
 
     print("Testing dataloader...")
 
-    train_loader, val_loader = get_dataloaders()
+    
+    train_loader, val_loader, test_loader = get_dataloaders()
 
     images, labels = next(iter(train_loader))
 

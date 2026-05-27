@@ -9,10 +9,13 @@ class EfficientNetClassifier(nn.Module):
         weights = EfficientNet_B0_Weights.DEFAULT
         self.model = efficientnet_b0(weights=weights)
 
+        for param in self.model.features.parameters():
+            param.requires_grad = False
+
         in_features = self.model.classifier[1].in_features
-        self.model.classifier[1] = nn.Linear(
-            in_features,
-            num_classes
+        self.model.classifier[1] = nn.Sequential(
+            nn.Dropout(p=0.5),                       # Dropout
+            nn.Linear(in_features, num_classes)
         )
 
     def forward(self, x):
