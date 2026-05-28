@@ -45,6 +45,7 @@ def fit(
     val_loader: DataLoader,
     device: torch.device,
     class_weights=None,
+    optimizer=None,
     lr: float = 1e-3,
     max_epochs: int = 20,
     weight_decay: float = 0.0,
@@ -53,7 +54,11 @@ def fit(
 ) -> list:
 
     loss_fn = nn.CrossEntropyLoss(weight=class_weights)
-    optim = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    # Use the custom optimizer if provided, otherwise create a standard one
+    if optimizer is not None:
+        optim = optimizer
+    else:
+        optim = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     best_state = None
     best_val_f1 = 0.0
