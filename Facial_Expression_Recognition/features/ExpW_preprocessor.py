@@ -6,18 +6,21 @@ runs MTCNN to detect and crop faces, converts to grayscale, saves as 64x64.
 Already ran this and pushed the output to Drive — you probably don't need to re-run.
 """
 
-import os
-import cv2
-import pandas as pd
-from mtcnn import MTCNN
-from tqdm import tqdm
-import tensorflow as tf
 import gc
 import glob
+import os
 
+import cv2
+import pandas as pd
+import tensorflow as tf
+from mtcnn import MTCNN
+from tqdm import tqdm
 
 # ENVIRONMENT SETUP (For Google Colab Reference Only)
-# If recreating this dataset from scratch on Google Colab, the following commands were used to set up the environment and extract the raw archives. Do not uncomment these lines if running locally.
+# If recreating this dataset from scratch on Google Colab,
+# the following commands were used to set up the environment
+# and extract the raw archives.
+# Do not uncomment these lines if running locally.
 # !pip install mtcnn tqdm
 # from google.colab import drive
 # drive.mount('/content/drive')
@@ -25,8 +28,9 @@ import glob
 
 
 class ExpWPreprocessor:
-
-    def __init__(self, raw_metadata_path, stratified_csv_path, input_dir_pattern, output_dir):
+    def __init__(
+        self, raw_metadata_path, stratified_csv_path, input_dir_pattern, output_dir
+    ):
         self.raw_metadata_path = raw_metadata_path
         self.stratified_csv_path = stratified_csv_path
         self.input_dir_pattern = input_dir_pattern
@@ -42,32 +46,40 @@ class ExpWPreprocessor:
         since those tend to be cleaner, more frontal faces.
         """
         print("building metadata...")
-        cols = ['image_name', 'face_id', 'top', 'left', 'right', 'bottom', 'confidence', 'label']
+        cols = [
+            "image_name",
+            "face_id",
+            "top",
+            "left",
+            "right",
+            "bottom",
+            "confidence",
+            "label",
+        ]
         df_raw = pd.read_csv(
-                            self.raw_metadata_path,
-                            sep=r"\s+",
-                            header=None,
-                            names=cols,
-                            engine="python",
-                            )
+            self.raw_metadata_path,
+            sep=r"\s+",
+            header=None,
+            names=cols,
+            engine="python",
+        )
         print(df_raw.columns)
         print(df_raw.head())
 
         # sort descending by confidence before grouping so .head(1500) always
         # picks the best-detected faces, not just the first ones in the file
         df_stratified = (
-                        df_raw
-                        .sort_values("confidence", ascending=False)
-                        .groupby("label", as_index=False, group_keys=False)
-                        .head(samples_per_class)
-                        .reset_index(drop=True)
-                    )
+            df_raw.sort_values("confidence", ascending=False)
+            .groupby("label", as_index=False, group_keys=False)
+            .head(samples_per_class)
+            .reset_index(drop=True)
+        )
 
         os.makedirs(os.path.dirname(self.stratified_csv_path), exist_ok=True)
         df_stratified.to_csv(self.stratified_csv_path, index=False)
 
-        print(df_stratified['label'].value_counts())
-        return df_stratified['image_name'].tolist()
+        print(df_stratified["label"].value_counts())
+        return df_stratified["image_name"].tolist()
 
     def find_input_dir(self):
         """
@@ -131,15 +143,12 @@ class ExpWPreprocessor:
                 )
 
                 if results:
-                    x, y, w, h = max(
-                        results,
-                        key=lambda b: b["confidence"]
-                    )["box"]
+                    x, y, w, h = max(results, key=lambda b: b["confidence"])["box"]
 
                     # clamp negatives, MTCNN can return them
                     x, y = max(0, x), max(0, y)
 
-                    face_crop = img[y:y + h, x:x + w]
+                    face_crop = img[y : y + h, x : x + w]
 
                     if face_crop.size > 0:
                         gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
@@ -162,24 +171,11 @@ class ExpWPreprocessor:
                 continue  # skip corrupt or unreadable images
 
         # rebuild metadata so it exactly matches successfully processed files
-        df_final = (
-            df_meta[df_meta["image_name"].isin(successful)]
-            .reset_index(drop=True)
+        df_final = df_meta[df_meta["image_name"].isin(successful)].reset_index(
+            drop=True
         )
 
         df_final.to_csv(self.stratified_csv_path, index=False)
 
         print(f"done — output saved to: {self.output_dir}")
         print(f"final metadata rows: {len(df_final)}")
-
-if __name__ == "__main__":
-    preprocessor = ExpWPreprocessor(
-        raw_metadata_path=os.path.join(dataset_dir, "label.lst"),
-        stratified_csv_path=os.path.join(dataset_dir, "Stratified_10k_Metadata.csv"),
-        input_dir_pattern=os.path.join(dataset_dir, "origin", "*.jpg"),
-        output_dir=os.path.join(dataset_dir, "Stratified_10k_Cleaned_64x64"),
-    )
-
-    images = preprocessor.build_balanced_metadata()
-    input_dir = preprocessor.find_input_dir()
-    preprocessor.run(images, input_dir)

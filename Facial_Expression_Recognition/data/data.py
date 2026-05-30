@@ -1,17 +1,16 @@
-import pandas as pd
 import os
-import kagglehub
-from PIL import Image
-import torch
-from torch.utils.data import Dataset, DataLoader, random_split, Subset
-from features.preprocessing import get_train_transform, get_eval_transform
 
-from features.ExpW_preprocessor import ExpWPreprocessor
+import kagglehub
+import pandas as pd
 import py7zr
-import shutil
-import multivolumefile
+import torch
+from features.ExpW_preprocessor import ExpWPreprocessor
+from features.preprocessing import get_eval_transform, get_train_transform
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset, Subset
 
 DATASET_ID = "shahzadabbas/expression-in-the-wild-expw-dataset"
+
 
 class FERImageDataset(Dataset):
     def __init__(self, dataset_dir, transform=None):
@@ -24,8 +23,7 @@ class FERImageDataset(Dataset):
         self.df = pd.read_csv(self.csv_path)
 
         self.file_paths = [
-            os.path.join(self.image_dir, img_name)
-            for img_name in self.df["image_name"]
+            os.path.join(self.image_dir, img_name) for img_name in self.df["image_name"]
         ]
 
         self.labels = self.df["label"].astype(int).tolist()
@@ -42,6 +40,7 @@ class FERImageDataset(Dataset):
             image = self.transform(image)
 
         return image, torch.tensor(label, dtype=torch.long)
+
 
 def get_dataset_dir():
     dataset_dir = kagglehub.dataset_download(DATASET_ID)
@@ -84,6 +83,7 @@ def get_dataset_dir():
 
     return dataset_dir
 
+
 def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.10):
     dataset_dir = get_dataset_dir()
 
@@ -110,7 +110,6 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
     total_size = len(dataset_train)
     train_size = int(train_split * total_size)
     val_size = int(val_split * total_size)
-    test_size = total_size - train_size - val_size
 
     # 3. Generate random, shuffled indices
     generator = torch.Generator().manual_seed(42)
@@ -118,19 +117,18 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
 
     # 4. Create the subsets using the correct parent dataset!
     train_dataset = Subset(dataset_train, indices[:train_size])
-    val_dataset = Subset(dataset_eval, indices[train_size:train_size+val_size])
-    test_dataset = Subset(dataset_eval, indices[train_size+val_size:])
+    val_dataset = Subset(dataset_eval, indices[train_size : train_size + val_size])
+    test_dataset = Subset(dataset_eval, indices[train_size + val_size :])
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader
-    
+
+
 if __name__ == "__main__":
     dataset_dir = get_dataset_dir()
-
-    from features.preprocessing_and_stratification import ExpWPreprocessor
 
     preprocessor = ExpWPreprocessor(
         raw_metadata_path=os.path.join(dataset_dir, "label.lst"),
@@ -146,9 +144,7 @@ if __name__ == "__main__":
     )
 
     print("Building balanced metadata...")
-    images = preprocessor.build_balanced_metadata(
-        samples_per_class=1500
-    )
+    images = preprocessor.build_balanced_metadata(samples_per_class=1500)
 
     print("Finding input directory...")
     input_dir = preprocessor.find_input_dir()
@@ -158,7 +154,6 @@ if __name__ == "__main__":
 
     print("Testing dataloader...")
 
-    
     train_loader, val_loader, test_loader = get_dataloaders()
 
     images, labels = next(iter(train_loader))

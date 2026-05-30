@@ -1,11 +1,15 @@
 import time
+
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, f1_score
+from torch.utils.data import DataLoader
 
-def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, class_weights=None) -> dict:
+
+def evaluate(
+    model: nn.Module, loader: DataLoader, device: torch.device, class_weights=None
+) -> dict:
     model.eval()
     all_y = []
     all_pred = []
@@ -38,6 +42,7 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, class_w
         "y_pred": y_pred,
     }
 
+
 def fit(
     model: nn.Module,
     train_loader: DataLoader,
@@ -50,9 +55,8 @@ def fit(
     weight_decay: float = 0.0,
     clip_grad_norm: float = None,
     patience: int = 3,
-    save_path: str = None, 
+    save_path: str = None,
 ) -> list:
-
     loss_fn = nn.CrossEntropyLoss(weight=class_weights)
     if optimizer is not None:
         optim = optimizer
@@ -116,7 +120,9 @@ def fit(
         if patience is not None:
             if val["f1"] > best_val_f1 + 1e-4:
                 best_val_f1 = val["f1"]
-                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                best_state = {
+                    k: v.detach().cpu().clone() for k, v in model.state_dict().items()
+                }
                 bad_epochs = 0
             else:
                 bad_epochs += 1
