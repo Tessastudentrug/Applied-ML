@@ -1,0 +1,10 @@
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:      
+      CNN_WEIGHTS: /usr/src/app/models/baseline_cnn_best_weights.pth
+      EFFNET_WEIGHTS: /usr/src/app/models/effnet.pth

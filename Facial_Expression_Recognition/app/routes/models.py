@@ -4,8 +4,9 @@ import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from PIL import Image
 
-from Facial_Expression_Recognition.app.config import EMOTION_LABELS
 from Facial_Expression_Recognition.features.preprocessing import get_eval_transform
+
+EMOTION_LABELS = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
 
 router = APIRouter(prefix="/models", tags=["models"])
 

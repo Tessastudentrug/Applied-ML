@@ -1,16 +1,14 @@
+import os
+
 import torch
 
-from Facial_Expression_Recognition.app.config import (
-    CNN_WEIGHTS,
-    EFFNET_WEIGHTS,
-)
 from Facial_Expression_Recognition.models.cnn import CNNImageClassifier
 from Facial_Expression_Recognition.models.effnet import EfficientNetClassifier
 
 
 def load_cnn(device):
     model = CNNImageClassifier(num_classes=7).to(device)
-    state = torch.load(CNN_WEIGHTS, map_location=device)
+    state = torch.load(os.getenv("CNN_WEIGHTS", "models/cnn.pth"), map_location=device)
     try:
         model.load_state_dict(state, strict=False)
         model.to(device)
@@ -22,7 +20,9 @@ def load_cnn(device):
 
 def load_effnet(device):
     model = EfficientNetClassifier(num_classes=7).to(device)
-    state = torch.load(EFFNET_WEIGHTS, map_location=device)
+    state = torch.load(
+        os.getenv("EFFNET_WEIGHTS", "models/effnet.pth"), map_location=device
+    )
     try:
         model.load_state_dict(state, strict=False)
         model.to(device)
