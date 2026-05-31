@@ -103,8 +103,8 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
         preprocessor.run(images, input_dir)
 
     # 1. Create TWO datasets: one with train augmentations, one with clean eval rules
-    dataset_train = FERImageDataset(dataset_dir, transform=get_train_transform())
-    dataset_eval = FERImageDataset(dataset_dir, transform=get_eval_transform())
+    dataset_train = FERImageDataset(dataset_dir, transform=get_train_transform(image_size=image_size))
+    dataset_eval = FERImageDataset(dataset_dir, transform=get_eval_transform(image_size=image_size))
 
     # 2. Calculate the split sizes
     total_size = len(dataset_train)

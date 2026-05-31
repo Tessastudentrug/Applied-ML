@@ -37,8 +37,9 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile):
         # Convert to Grayscale ("L") to match your training pipeline
         image = Image.open(io.BytesIO(contents)).convert("L")
 
-        # Apply the eval transform and add batch dimension
-        transform = get_eval_transform(image_size=64)
+        # Dyamic image size: 224 for Effnet, 64 for CNN
+        img_size = 224 if model_id == "effnet" else 64
+        transform = get_eval_transform(image_size=img_size)
         tensor = transform(image).unsqueeze(0).to(registry.device)
         model = registry.get(model_id)
 
