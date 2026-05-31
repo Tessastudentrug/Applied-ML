@@ -2,7 +2,7 @@
 data_preprocessing_and_stratification.py
 
 Grabs the top 1500 highest-confidence images per emotion class from ExpW,
-runs MTCNN to detect and crop faces, converts to grayscale, saves as 64x64.
+runs MTCNN to detect and crop faces, converts to grayscale, saves as 224x224.
 Already ran this and pushed the output to Drive — you probably don't need to re-run.
 """
 
@@ -97,7 +97,7 @@ class ExpWPreprocessor:
         Main preprocessing loop. For each image we:
         1. run MTCNN to get all face bounding boxes
         2. keep only the highest-confidence detection (avoids background faces)
-        3. crop to that box, convert to grayscale, resize to 64x64
+        3. crop to that box, convert to grayscale, resize to 224x224
         4. save to output_dir under the original filename
 
         We greyscale to keep the input space small and removes color
@@ -152,7 +152,7 @@ class ExpWPreprocessor:
 
                     if face_crop.size > 0:
                         gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
-                        resized = cv2.resize(gray, (64, 64))
+                        resized = cv2.resize(gray, (224, 224))
 
                         output_path = os.path.join(self.output_dir, filename)
 

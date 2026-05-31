@@ -61,7 +61,7 @@ def fit(
     if optimizer is not None:
         optim = optimizer
     else:
-        optim = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        optim = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     best_state = None
     best_val_f1 = 0.0

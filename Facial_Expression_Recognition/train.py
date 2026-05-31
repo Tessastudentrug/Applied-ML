@@ -40,12 +40,12 @@ def main():
     # 2. SETUP OPTIMIZER WITH DIFFERENTIAL LEARNING RATES
     if args.model == "effnet":
         # Protect the ImageNet weights with 1e-5, train the new classifier with 1e-3
-        optimizer = torch.optim.Adam(
+        optimizer = torch.optim.AdamW(
             [
-                {"params": model.model.features.parameters(), "lr": 1e-5},
-                {"params": model.model.classifier.parameters(), "lr": 1e-3},
+                {"params": model.model.features.parameters(), "lr": 3e-5},
+                {"params": model.model.classifier.parameters(), "lr": 3e-4},
             ],
-            weight_decay=1e-4,
+            weight_decay=1e-3,
         )
     else:
         # Standard optimizer for CNN
@@ -58,7 +58,7 @@ def main():
         val_loader=val_loader,
         device=device,
         optimizer=optimizer,  # Pass our custom optimizer into fit()
-        max_epochs=20,
+        max_epochs=30,
         patience=5,
     )
 

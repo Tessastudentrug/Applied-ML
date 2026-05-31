@@ -9,17 +9,7 @@ class EfficientNetClassifier(nn.Module):
         weights = EfficientNet_B0_Weights.DEFAULT
         self.model = efficientnet_b0(weights=weights)
 
-        # 1. First, freeze the entire backbone so we don't destroy ImageNet weights
-        for param in self.model.features.parameters():
-            param.requires_grad = False
-
-        # 2. Now, UNFREEZE the last 4 layers/blocks of the features
-        # This allows the highest-level filters to adapt to faces
-        for block in self.model.features[-4:]:
-            for param in block.parameters():
-                param.requires_grad = True
-
-        # 3. Setup the custom classifier with the Dropout restored
+        # Setup the custom classifier with the Dropout restored
         in_features = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Sequential(
             nn.Dropout(p=0.5),  # Re-added the 0.5 Dropout

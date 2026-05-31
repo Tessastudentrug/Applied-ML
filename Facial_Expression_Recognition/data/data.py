@@ -4,7 +4,6 @@ import kagglehub
 import pandas as pd
 import py7zr
 import torch
-from features.ExpW_preprocessor import ExpWPreprocessor
 from features.preprocessing import get_eval_transform, get_train_transform
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset, Subset
@@ -18,7 +17,7 @@ class FERImageDataset(Dataset):
         self.transform = transform
 
         self.csv_path = os.path.join(dataset_dir, "Stratified_10k_Metadata.csv")
-        self.image_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_64x64")
+        self.image_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_224x224")
 
         self.df = pd.read_csv(self.csv_path)
 
@@ -88,9 +87,10 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
     dataset_dir = get_dataset_dir()
 
     preprocessed_csv = os.path.join(dataset_dir, "Stratified_10k_Metadata.csv")
-    preprocessed_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_64x64")
+    preprocessed_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_224x224")
 
     if not os.path.exists(preprocessed_csv) or not os.path.isdir(preprocessed_dir):
+        from features.ExpW_preprocessor import ExpWPreprocessor
         preprocessor = ExpWPreprocessor(
             raw_metadata_path=os.path.join(dataset_dir, "label.lst"),
             stratified_csv_path=preprocessed_csv,
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         input_dir_pattern=os.path.join(dataset_dir, "origin", "*.jpg"),
         output_dir=os.path.join(
             dataset_dir,
-            "Stratified_10k_Cleaned_64x64",
+            "Stratified_10k_Cleaned_224x224",
         ),
     )
 

@@ -1,7 +1,7 @@
 from torchvision import transforms
 
 
-def get_train_transform(image_size=64):
+def get_train_transform(image_size):
     """Used for training: Includes random augmentations to stop overfitting."""
     return transforms.Compose(
         [
@@ -14,7 +14,7 @@ def get_train_transform(image_size=64):
     )
 
 
-def get_eval_transform(image_size=64):
+def get_eval_transform(image_size):
     """Used for Validation/Testing: NO augmentation, just clean images."""
     return transforms.Compose(
         [
