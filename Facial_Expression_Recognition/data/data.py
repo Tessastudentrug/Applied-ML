@@ -128,6 +128,7 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
 
 
 if __name__ == "__main__":
+    from features.ExpW_preprocessor import ExpWPreprocessor
     dataset_dir = get_dataset_dir()
 
     preprocessor = ExpWPreprocessor(
