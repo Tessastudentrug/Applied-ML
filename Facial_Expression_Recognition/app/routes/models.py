@@ -3,16 +3,20 @@ import io
 import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from PIL import Image
-
 from Facial_Expression_Recognition.features.preprocessing import get_eval_transform
+from Facial_Expression_Recognition.app.schemas.models import PredictionResponse, ModelsResponse, Emotion 
+from Facial_Expression_Recognition.app.schemas.error import ErrorResponse
 
-EMOTION_LABELS = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
+EMOTIONS = list(Emotion)
 
 router = APIRouter(prefix="/models", tags=["models"])
 
 
-@router.post("/{model_id}/predict")
-async def predict_emotion(model_id: str, request: Request, file: UploadFile):
+@router.post("/{model_id}/predict", response_model=PredictionResponse, responses={
+    400: {'model': ErrorResponse, "description": 'Invalid Filetype'},
+    404: {'model': ErrorResponse, "description": 'Model not found'},
+    500: {'model': ErrorResponse, "description": 'Internal Error'},})
+async def predict_emotion(model_id: str, request: Request, file: UploadFile) -> PredictionResponse:
     """
     Accepts an image upload and returns the predicted emotion.
     """
@@ -21,8 +25,8 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile):
     if model_id not in registry.list():
         raise HTTPException(
             status_code=404,
-            detail=f"""Model {model_id} not found.
-              Available models: {registry.list()}""",
+            detail=f"Model {model_id} not found. " 
+              + f"Available models: {registry.list()}",
         )
 
     # Use HTTP 400 (Bad Request) if the user uploads a non-image file
@@ -49,7 +53,7 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile):
             outputs = model(tensor)
             _, predicted_idx = torch.max(outputs, 1)
 
-        emotion = EMOTION_LABELS[predicted_idx.item()]
+        emotion = EMOTIONS[predicted_idx.item()]
 
         # Return a clean JSON response
         #  (HTTP 200 is default for successful FastAPI returns)
@@ -67,7 +71,7 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile):
         ) from e
 
 
-@router.get("")
+@router.get("", response_model=ModelsResponse)
 async def list_models(request: Request):
     registry = request.app.state.model_registry
     return registry.list()
