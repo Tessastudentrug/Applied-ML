@@ -1,3 +1,18 @@
+"""
+Training script for facial expression recognition models.
+
+Supports training:
+- CNN baseline model
+- EfficientNet transfer learning model
+
+Handles:
+- Dataset loading
+- Model selection
+- Optimizer setup
+- Training loop execution
+- Model saving
+"""
+
 import argparse
 
 import torch
@@ -9,6 +24,16 @@ from Facial_Expression_Recognition.models.effnet import EfficientNetClassifier
 
 
 def get_model(model_name, num_classes=7):
+    """
+    Initialize a model based on the selected architecture.
+
+    Args:
+        model_name: 'cnn' or 'effnet'
+        num_classes: Number of output emotion classes
+
+    Returns:
+        Initialized PyTorch model
+    """
     if model_name == "cnn":
         return CNNImageClassifier(num_classes=num_classes)
     if model_name == "effnet":
@@ -16,6 +41,18 @@ def get_model(model_name, num_classes=7):
 
 
 def main():
+    """
+    Main training pipeline.
+
+    Steps:
+        - Parse CLI arguments
+        - Select device (CPU/GPU)
+        - Load model
+        - Create data loaders
+        - Define optimizer
+        - Train model using fit()
+        - Save trained weights
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",

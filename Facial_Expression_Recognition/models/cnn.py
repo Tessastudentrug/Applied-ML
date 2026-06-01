@@ -1,7 +1,25 @@
+"""
+Convolutional Neural Network for facial expression classification.
+
+Architecture:
+- 4 convolutional blocks (Conv → ReLU → MaxPool)
+- Fully connected classifier head
+- Outputs logits for emotion classes
+"""
+
 import torch.nn as nn
 
 
 class CNNImageClassifier(nn.Module):
+    """
+    Convolutional Neural Network for facial expression classification.
+
+    Architecture:
+    - 4 convolutional blocks (Conv → ReLU → MaxPool)
+    - Fully connected classifier head
+    - Outputs logits for emotion classes
+    """
+
     def __init__(self, num_classes=7, dropout=0.5):
         super().__init__()
         self.conv_block = nn.Sequential(
@@ -28,5 +46,14 @@ class CNNImageClassifier(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward pass of the CNN.
+
+        Args:
+            x: Input tensor of shape (batch_size, 1, H, W)
+
+        Returns:
+            Logits tensor of shape (batch_size, num_classes)
+        """
         features = self.conv_block(x)
         return self.classifier(features)

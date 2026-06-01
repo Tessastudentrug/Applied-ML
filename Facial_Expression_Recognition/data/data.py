@@ -1,3 +1,14 @@
+"""
+Dataset and dataloader utilities for Facial Expression Recognition.
+
+Handles:
+- Kaggle dataset download and extraction
+- Dataset preprocessing trigger (ExpW preprocessor)
+- PyTorch Dataset implementation
+- Train/validation/test splitting
+- DataLoader creation with transforms
+"""
+
 import os
 
 import kagglehub
@@ -12,6 +23,12 @@ DATASET_ID = "shahzadabbas/expression-in-the-wild-expw-dataset"
 
 
 class FERImageDataset(Dataset):
+    """
+    PyTorch dataset for facial expression images.
+
+    Loads images and labels from a preprocessed CSV file.
+    """
+
     def __init__(self, dataset_dir, transform=None):
         self.dataset_dir = dataset_dir
         self.transform = transform
@@ -42,6 +59,11 @@ class FERImageDataset(Dataset):
 
 
 def get_dataset_dir():
+    """
+    Download and extract dataset from Kaggle if not already available.
+
+    Handles multi-part 7z archive reconstruction and extraction.
+    """
     dataset_dir = kagglehub.dataset_download(DATASET_ID)
 
     extracted_dir = os.path.join(dataset_dir, "origin")
@@ -84,13 +106,23 @@ def get_dataset_dir():
 
 
 def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.10):
+    """
+    Create train/validation/test DataLoaders.
+
+    Pipeline:
+    - Download dataset if needed
+    - Run preprocessing if required
+    - Create dataset with train/eval transforms
+    - Split into train/val/test sets
+    - Return PyTorch DataLoaders
+    """
     dataset_dir = get_dataset_dir()
 
     preprocessed_csv = os.path.join(dataset_dir, "Stratified_10k_Metadata.csv")
     preprocessed_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_224x224")
 
     if not os.path.exists(preprocessed_csv) or not os.path.isdir(preprocessed_dir):
-        from Facial_Expression_Recognition.features.ExpW_preprocessor import ExpWPreprocessor
+        from features.ExpW_preprocessor import ExpWPreprocessor
         preprocessor = ExpWPreprocessor(
             raw_metadata_path=os.path.join(dataset_dir, "label.lst"),
             stratified_csv_path=preprocessed_csv,
@@ -103,8 +135,12 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
         preprocessor.run(images, input_dir)
 
     # 1. Create TWO datasets: one with train augmentations, one with clean eval rules
-    dataset_train = FERImageDataset(dataset_dir, transform=get_train_transform(image_size=image_size))
-    dataset_eval = FERImageDataset(dataset_dir, transform=get_eval_transform(image_size=image_size))
+    dataset_train = FERImageDataset(
+        dataset_dir, transform=get_train_transform(image_size=image_size)
+    )
+    dataset_eval = FERImageDataset(
+        dataset_dir, transform=get_eval_transform(image_size=image_size)
+    )
 
     # 2. Calculate the split sizes
     total_size = len(dataset_train)
@@ -129,6 +165,7 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
 
 if __name__ == "__main__":
     from features.ExpW_preprocessor import ExpWPreprocessor
+
     dataset_dir = get_dataset_dir()
 
     preprocessor = ExpWPreprocessor(

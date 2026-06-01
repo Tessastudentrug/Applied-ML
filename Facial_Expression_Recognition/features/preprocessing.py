@@ -1,8 +1,26 @@
+"""
+Image preprocessing pipelines for training and evaluation.
+
+Defines torchvision transforms for:
+- Training (with augmentation)
+- Evaluation / inference (deterministic)
+"""
+
 from torchvision import transforms
 
 
 def get_train_transform(image_size):
-    """Used for training: Includes random augmentations to stop overfitting."""
+    """
+    Training image transform pipeline with data augmentation.
+
+    Adds randomness to improve generalization and reduce overfitting.
+
+    Args:
+        image_size: Target image size (H, W).
+
+    Returns:
+        torchvision.transforms.Compose pipeline.
+    """
     return transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
@@ -15,7 +33,17 @@ def get_train_transform(image_size):
 
 
 def get_eval_transform(image_size):
-    """Used for Validation/Testing: NO augmentation, just clean images."""
+    """
+    Evaluation / inference image transform pipeline.
+
+    Uses deterministic preprocessing only (no augmentation).
+
+    Args:
+        image_size: Target image size (H, W).
+
+    Returns:
+        torchvision.transforms.Compose pipeline.
+    """
     return transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),

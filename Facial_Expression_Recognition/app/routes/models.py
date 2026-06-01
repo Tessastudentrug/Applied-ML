@@ -1,38 +1,66 @@
+"""
+API endpoints for model inference and model discovery.
+"""
+
 import io
 import os
+
 import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from PIL import Image
-from Facial_Expression_Recognition.features.preprocessing import get_eval_transform
-from Facial_Expression_Recognition.app.schemas.models import PredictionResponse, ModelsResponse, Emotion 
-from Facial_Expression_Recognition.app.schemas.error import ErrorResponse
+
 from Facial_Expression_Recognition.app.config import MAX_FILESIZE
+from Facial_Expression_Recognition.app.schemas.error import ErrorResponse
+from Facial_Expression_Recognition.app.schemas.models import (
+    Emotion,
+    ModelsResponse,
+    PredictionResponse,
+)
+from Facial_Expression_Recognition.features.preprocessing import get_eval_transform
 
 EMOTIONS = list(Emotion)
 
 router = APIRouter(prefix="/models", tags=["models"])
 
 
-@router.post("/{model_id}/predict", response_model=PredictionResponse, 
+@router.post(
+    "/{model_id}/predict",
+    response_model=PredictionResponse,
     summary="Predict facial emotion",
-    description="Upload a image of a face and predict the emotion using your selected model",
+    description=(
+        "Upload a image of a face and predict " "the emotion using your selected model"
+    ),
     responses={
-    404: {'model': ErrorResponse, "description": 'Model not found'},
-    413: {'model': ErrorResponse, "description": 'File too large'},
-    415: {'model': ErrorResponse, "description": 'Unsupported Mediatype'},
-    422: {"description": 'Unprocessable Entity'}, # FastAPI has different error schema
-    500: {'model': ErrorResponse, "description": 'Internal Error'},})
-async def predict_emotion(model_id: str, request: Request, file: UploadFile) -> PredictionResponse:
+        404: {"model": ErrorResponse, "description": "Model not found"},
+        413: {"model": ErrorResponse, "description": "File too large"},
+        415: {"model": ErrorResponse, "description": "Unsupported Mediatype"},
+        422: {
+            "description": "Unprocessable Entity"
+        },  # FastAPI has different error schema
+        500: {"model": ErrorResponse, "description": "Internal Error"},
+    },
+)
+async def predict_emotion(
+    model_id: str, request: Request, file: UploadFile
+) -> PredictionResponse:
     """
-    Accepts an image upload and returns the predicted emotion.
+    Predict the facial emotion shown in an uploaded image.
+
+    Args:
+        model_id: Identifier of the model to use for inference.
+        request: FastAPI request containing application state.
+        file: Uploaded image file.
+
+    Returns:
+        PredictionResponse containing the predicted emotion.
     """
     registry = request.app.state.model_registry
 
     if model_id not in registry.list():
         raise HTTPException(
             status_code=404,
-            detail=f"Model {model_id} not found. " 
-              + f"Available models: {registry.list()}",
+            detail=f"Model {model_id} not found. "
+            + f"Available models: {registry.list()}",
         )
 
     # Use HTTP 415 (Unsupported Mediatype) if the user uploads a non-image file
@@ -45,10 +73,7 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile) -> 
         # Read the file bytes
         contents = await file.read()
         if len(contents) > int(os.getenv("MAX_FILESIZE", MAX_FILESIZE)):
-            raise HTTPException(
-                status_code=413,
-                detail="File exceeds maximum size."
-            )
+            raise HTTPException(status_code=413, detail="File exceeds maximum size.")
 
         # Convert to Grayscale ("L") to match your training pipeline
         image = Image.open(io.BytesIO(contents)).convert("L")
@@ -84,10 +109,21 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile) -> 
         ) from e
 
 
-@router.get("",
+@router.get(
+    "",
     summary="List available models",
     description="Returns model id's that can be used for prediction",
-    response_model=ModelsResponse)
+    response_model=ModelsResponse,
+)
 async def list_models(request: Request) -> ModelsResponse:
+    """
+    Return all available model identifiers.
+
+    Args:
+        request: FastAPI request containing application state.
+
+    Returns:
+        ModelsResponse containing available models.
+    """
     registry = request.app.state.model_registry
     return ModelsResponse(models=registry.list())

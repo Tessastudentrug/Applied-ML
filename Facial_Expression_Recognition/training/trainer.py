@@ -1,3 +1,11 @@
+"""
+Training and evaluation utilities for facial expression recognition models.
+
+Includes:
+- evaluate(): model evaluation on validation/test set
+- fit(): full training loop with early stopping and metrics tracking
+"""
+
 import time
 
 import numpy as np
@@ -10,6 +18,23 @@ from torch.utils.data import DataLoader
 def evaluate(
     model: nn.Module, loader: DataLoader, device: torch.device, class_weights=None
 ) -> dict:
+    """
+    Evaluate model performance on a dataset.
+
+    Computes:
+    - Loss (cross entropy)
+    - Accuracy
+    - Macro F1-score
+
+    Args:
+        model: PyTorch model
+        loader: DataLoader for evaluation set
+        device: CPU or GPU device
+        class_weights: Optional class weights for imbalanced datasets
+
+    Returns:
+        Dictionary containing loss, accuracy, F1 score, predictions, and labels
+    """
     model.eval()
     all_y = []
     all_pred = []
@@ -57,6 +82,33 @@ def fit(
     patience: int = 3,
     save_path: str = None,
 ) -> list:
+    """
+    Train a PyTorch model with validation monitoring and early stopping.
+
+    Features:
+    - Supports custom optimizer or AdamW fallback
+    - Tracks accuracy and loss per epoch
+    - Uses macro F1 for early stopping
+    - Optional gradient clipping
+    - Early stopping with best model restore
+
+    Args:
+        model: PyTorch model
+        train_loader: training dataset loader
+        val_loader: validation dataset loader
+        device: CPU or GPU device
+        class_weights: optional weights for imbalanced classes
+        optimizer: optional pre-defined optimizer
+        lr: learning rate (if optimizer not provided)
+        max_epochs: maximum number of epochs
+        weight_decay: L2 regularization
+        clip_grad_norm: max gradient norm (optional)
+        patience: early stopping patience based on F1 score
+        save_path: optional path to save best model
+
+    Returns:
+        List of training history dictionaries per epoch
+    """
     loss_fn = nn.CrossEntropyLoss(weight=class_weights)
     if optimizer is not None:
         optim = optimizer

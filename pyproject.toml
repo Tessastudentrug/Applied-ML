@@ -42,3 +42,8 @@ torchvision = [
 [tool.ruff.lint]
 select = ["E", "W", "F", "N", "I", "B", "UP"]
 ignore = ["N999"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.15",
+]

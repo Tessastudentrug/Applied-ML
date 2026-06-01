@@ -15,6 +15,7 @@ import tensorflow as tf
 from mtcnn import MTCNN
 from tqdm import tqdm
 
+
 class ExpWPreprocessor:
     def __init__(
         self, raw_metadata_path, stratified_csv_path, input_dir_pattern, output_dir
