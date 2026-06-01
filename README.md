@@ -119,7 +119,7 @@ docker compose up --build
 
 ## Running the API
 
-The backend is built with FastAPI. To start the server locally:
+The backend is built with FastAPI. To start the server locally run from root:
 
 ```bash
 uv run uvicorn Facial_Expression_Recognition.app.main:app --reload --host 0.0.0.0 --port 8000
