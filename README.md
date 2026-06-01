@@ -1,6 +1,6 @@
 # Facial Expression Recognition API
 
-This repository contains the pipeline and API for facial expression recognition. It handles class imbalance in stratified datasets and displays CNNs (Baseline CNN and EfficientNet-B0) via a FastAPI backend.
+This repository contains the pipeline and API for facial expression recognition. It handles class imbalance in stratified datasets and deploys CNNs (Baseline CNN and EfficientNet-B0) via a FastAPI backend.
 
 ## Repository Map
 ```text
@@ -134,12 +134,12 @@ The training pipeline handles dataset stratification, preprocessing, and model e
 
 To train the baseline CNN:
 ```bash
-uv run Facial_Expression_Recognition/train.py --model cnn
+uv run Facial_Expression_Recognition.train --model cnn
 ```
 
 To train EfficientNet-B0:
 ```bash
-uv run Facial_Expression_Recognition/train.py --model effnet
+uv run Facial_Expression_Recognition.train --model effnet
 ```
 
 ### Kaggle Authentication
@@ -173,10 +173,16 @@ Verify the API and model registry are running correctly.
 ```bash
 curl --request GET "http://localhost:8000/health"
 ```
-
+Example response:
+```json
+{ 
+     "status": "ok",
+    "models_loaded": ["cnn", "effnet"]
+}
+```
 ### 2. Model Inference
 
-Send an image file for facial expression classification. Replace `@test_face.jpg` with the path to your local image.
+Send an image file for facial expression classification. Replace `@test_face.jpg` with the path to your local image. This image should contain a visible human face for optimal results. Supported files are standard image files such as JPG, JPEG and PNG. The user does not have to manually preprocess the image, this is handled by the API before inference.
 
 ```bash
 curl --request POST "http://localhost:8000/models/effnet/predict" \
@@ -184,9 +190,33 @@ curl --request POST "http://localhost:8000/models/effnet/predict" \
      --header "Content-Type: multipart/form-data" \
      --form "file=@test_face.jpg"
 ```
+Example response:
+```json
+{ 
+     "filename": "test_face.jpg", 
+     "predicted_emotion": "happy"
+}
+````
 
 ### 3. Retrieve Models
 Retrieves a list of all available models. The id's returned can be used in `/models/{model_id}/predict`
 ```bash
 curl "http://localhost:8000/models" \
 ```
+
+Example response: 
+```json
+{
+     "models": ["cnn", "effnet"]
+}
+```
+
+### Common Error Responses
+
+| Status Code | Description |
+|------------|-------------|
+| 404 | Requested model does not exist |
+| 413 | Uploaded file is too large |
+| 415 | Unsupported file type |
+| 422 | Missing or invalid request data |
+| 500 | Internal server error |
