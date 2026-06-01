@@ -4,7 +4,7 @@ import torch
 
 from Facial_Expression_Recognition.models.cnn import CNNImageClassifier
 from Facial_Expression_Recognition.models.effnet import EfficientNetClassifier
-from config import CNN_WEIGHTS, EFFNET_WEIGHTS
+from Facial_Expression_Recognition.app.config import CNN_WEIGHTS, EFFNET_WEIGHTS
 
 
 def load_cnn(device):
