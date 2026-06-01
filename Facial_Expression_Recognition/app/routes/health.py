@@ -10,4 +10,4 @@ router = APIRouter(tags=["Health"])
 async def health(request: Request) -> HealthResponse:
     registry = request.app.state.model_registry
 
-    return {"status": "ok", "models_loaded": registry.list()}
+    return HealthResponse(status="ok",models_loaded=registry.list())

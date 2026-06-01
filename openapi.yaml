@@ -1,0 +1,174 @@
+openapi: 3.1.0
+info:
+  title: Facial Expression Recognition API
+  description: RESTful API for classifying emotions from face images.
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  '/models/{model_id}/predict':
+    post:
+      tags:
+        - models
+      summary: Predict facial emotion
+      description: >-
+        Upload a image of a face and predict the emotion using your selected
+        model
+      operationId: predict_emotion_models__model_id__predict_post
+      parameters:
+        - name: model_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Model Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: >-
+                #/components/schemas/Body_predict_emotion_models__model_id__predict_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+        '404':
+          description: Model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Unsupported Mediatype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /models:
+    get:
+      tags:
+        - models
+      summary: List available models
+      description: Returns model id's that can be used for prediction
+      operationId: list_models_models_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsResponse'
+components:
+  schemas:
+    Body_predict_emotion_models__model_id__predict_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+        - file
+      title: Body_predict_emotion_models__model_id__predict_post
+    Emotion:
+      type: string
+      enum:
+        - angry
+        - disgust
+        - fear
+        - happy
+        - sad
+        - surprise
+        - neutral
+      title: Emotion
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          example: 'Model logreg not found. Available models: [''cnn'', ''effnet'']'
+      type: object
+      required:
+        - detail
+      title: ErrorResponse
+    HealthResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Current API health status
+          example: ok
+        models_loaded:
+          items:
+            type: string
+          type: array
+          title: Models Loaded
+          description: Models currently implemented
+          example:
+            - cnn
+            - effnet
+      type: object
+      required:
+        - status
+        - models_loaded
+      title: HealthResponse
+    ModelsResponse:
+      properties:
+        models:
+          items:
+            type: string
+          type: array
+          title: Models
+          description: Models currently implemented
+          example:
+            - cnn
+            - effnet
+      type: object
+      required:
+        - models
+      title: ModelsResponse
+    PredictionResponse:
+      properties:
+        filename:
+          type: string
+          title: Filename
+          description: Filename of image to classify
+          example: angry_man.jpg
+        predicted_emotion:
+          $ref: '#/components/schemas/Emotion'
+          description: Predicted emotion
+          example: angry
+      type: object
+      required:
+        - filename
+        - predicted_emotion
+      title: PredictionResponse

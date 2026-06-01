@@ -1,3 +1,3 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field 
 class ErrorResponse(BaseModel):
-    detail: str
+    detail: str = Field(example="Model logreg not found. Available models: ['cnn', 'effnet']")

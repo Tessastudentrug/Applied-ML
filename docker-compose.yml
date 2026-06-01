@@ -8,3 +8,4 @@ services:
     environment:      
       CNN_WEIGHTS: /usr/src/app/models/baseline_cnn_best_weights.pth
       EFFNET_WEIGHTS: /usr/src/app/models/effnet.pth
+      MAX_FILESIZE: 10485760
