@@ -5,26 +5,82 @@ This repository contains the pipeline and API for facial expression recognition.
 ## Repository Map
 ```text
 .
-├── Facial_Expression_Recognition/
-│   ├── app/
+├── Facial_Expression_Recognition
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-311.pyc
+│   ├── app
+│   │   ├── __pycache__
+│   │   │   ├── config.cpython-311.pyc
+│   │   │   └── main.cpython-311.pyc
 │   │   ├── config.py
 │   │   ├── main.py
-│   │   ├── ml/
-│   │   ├── routes/
-│   │   └── schemas/
-│   ├── data/
-│   ├── features/
-│   ├── models/
-│   ├── training/
-│   └── train.py
-├── data/
-├── docker/
-├── models/
+│   │   ├── ml
+│   │   │   ├── __pycache__
+│   │   │   │   ├── loader.cpython-311.pyc
+│   │   │   │   └── registry.cpython-311.pyc
+│   │   │   ├── loader.py
+│   │   │   └── registry.py
+│   │   ├── routes
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-311.pyc
+│   │   │   │   ├── health.cpython-311.pyc
+│   │   │   │   └── models.cpython-311.pyc
+│   │   │   ├── health.py
+│   │   │   └── models.py
+│   │   └── schemas
+│   │       ├── __init__.py
+│   │       ├── error.py
+│   │       ├── health.py
+│   │       └── models.py
+│   ├── data
+│   │   ├── __init__.py
+│   │   └── data.py
+│   ├── features
+│   │   ├── ExpW_preprocessor.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-311.pyc
+│   │   │   └── preprocessing.cpython-311.pyc
+│   │   └── preprocessing.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-311.pyc
+│   │   │   ├── cnn.cpython-311.pyc
+│   │   │   └── effnet.cpython-311.pyc
+│   │   ├── cnn.py
+│   │   └── effnet.py
+│   ├── train.py
+│   └── training
+│       ├── __init__.py
+│       └── trainer.py
+├── README.md
+├── __init__.py
+├── __pycache__
+│   └── main.cpython-312.pyc
+├── data
+│   └── ADD_SAMPLEDATA.txt
+├── docker
+│   ├── Dockerfile
+│   ├── pyproject_docker.toml
+│   └── uv_docker.lock
+├── docker-compose.yml
+├── main.py
+├── models
 │   ├── baseline_cnn_best_weights.pth
 │   └── effnet.pth
-├── tests/
-├── docker-compose.yml
 ├── pyproject.toml
+├── tests
+│   ├── __init__.py
+│   ├── data
+│   │   └── __init__.py
+│   ├── features
+│   │   └── __init__.py
+│   ├── models
+│   │   └── __init__.py
+│   └── test_main.py
 └── uv.lock
 ```
 
