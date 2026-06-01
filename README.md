@@ -84,11 +84,7 @@ This repository contains the pipeline and API for facial expression recognition.
 └── uv.lock
 ```
 
-## Environment Setup
-
-This project uses `uv`
-
-### Local Installation
+# Getting Started
 
 1. Clone the repository:
 
@@ -97,27 +93,28 @@ git clone https://github.com/Tessastudentrug/Applied-ML.git
 cd Applied-ML
 ```
 
-2. Sync the environment:
+2. Choose Docker or full functionality
+
+## Docker Installation (API only)
+This project allows the option to run the API service as a Docker container. The Docker service image is meant for inference only and does not include the training pipeline and its dependencies. This makes the API significantly lighter than the full deployment environment.
+
+To build and start the container:
+```bash
+docker compose up --build
+```
+The API will start automatically after finishing building. The API documentation will be available at `http://localhost:8000/docs` unless configured differently in `docker-compose.yml`
+
+
+## Full installation
+This project uses `uv` for dependency management. For instructions on how to install `uv`, visit their [official documentation](https://docs.astral.sh/uv/getting-started/installation/). 
+
+### Install all project dependencies:
 
 ```bash
 uv sync
 ```
 
-3. Activate the virtual environment:
-
-```bash
-source .venv/bin/activate
-```
-
-## Docker Installation
-
-To run the API in a containerized environment:
-
-```bash
-docker compose up --build
-```
-
-## Running the API
+### Running the API
 
 The backend is built with FastAPI. To start the server locally run from root:
 
@@ -131,7 +128,44 @@ The API documentation will be automatically available at:
 http://localhost:8000/docs
 ```
 
-## Example API Calls
+
+### Model Training
+
+The training pipeline handles dataset stratification, preprocessing, and model evaluation. To retrain the models, execute the training script:
+
+To train the baseline CNN:
+```bash
+uv run Facial_Expression_Recognition/train.py --model cnn
+```
+
+To train EfficientNet-B0:
+```bash
+uv run Facial_Expression_Recognition/train.py --model effnet
+```
+
+### Kaggle Authentication
+Training data is downloaded automatically using KaggleHub when running `train.py`. Before running the training pipeline, configure your Kaggle API token.
+
+You can generate a free Kaggle API token from the [Kaggle account settings page](https://www.kaggle.com/settings/api)
+
+Run the following commands to place the token where KaggleHub expects it:
+
+``` bash
+mkdir -p ~/.kaggle 
+echo '<YOUR_KAGGLE_TOKEN>' > ~/.kaggle/access_token
+chmod 600 ~/.kaggle/access_token 
+```
+
+### Testing
+
+To run the test suite and verify data preprocessing and API routing:
+
+```bash
+uv run pytest tests/
+```
+
+
+# Example API Calls
 
 ### 1. Health Check
 
@@ -146,23 +180,13 @@ curl --request GET "http://localhost:8000/health"
 Send an image for facial expression classification.
 
 ```bash
-curl --request POST "http://localhost:8000/predict" \
+curl --request POST "http://localhost:8000/models/{model_id}/predict" \
      --header "Content-Type: application/json" \
-     --data '{"image_data": "<base64_encoded_string>", "model_type": "effnet"}'
+     --data '{"image_data": "<base64_encoded_string>"}'
 ```
 
-## Model Training
-
-The training pipeline handles dataset stratification, preprocessing, and model evaluation. To retrain the models, execute the training script:
-
+### 3. Retrieve Models
+Retrieves a list of all available models. The id's returned can be used in `/models/{model_id}/predict`
 ```bash
-uv run Facial_Expression_Recognition/train.py
-```
-
-## Testing
-
-To run the test suite and verify data preprocessing and API routing:
-
-```bash
-uv run pytest tests/
+curl "http://localhost:8000/models" \
 ```

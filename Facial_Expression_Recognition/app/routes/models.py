@@ -74,4 +74,4 @@ async def predict_emotion(model_id: str, request: Request, file: UploadFile) -> 
 @router.get("", response_model=ModelsResponse)
 async def list_models(request: Request):
     registry = request.app.state.model_registry
-    return registry.list()
+    return ModelsResponse(models=registry.list())
