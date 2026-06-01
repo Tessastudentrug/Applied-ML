@@ -177,12 +177,13 @@ curl --request GET "http://localhost:8000/health"
 
 ### 2. Model Inference
 
-Send an image for facial expression classification.
+Send an image file for facial expression classification. Replace `@test_face.jpg` with the path to your local image.
 
 ```bash
-curl --request POST "http://localhost:8000/models/{model_id}/predict" \
-     --header "Content-Type: application/json" \
-     --data '{"image_data": "<base64_encoded_string>"}'
+curl -X POST "http://localhost:8000/models/effnet/predict" \
+     -H "accept: application/json" \
+     -H "Content-Type: multipart/form-data" \
+     -F "file=@test_face.jpg"
 ```
 
 ### 3. Retrieve Models
