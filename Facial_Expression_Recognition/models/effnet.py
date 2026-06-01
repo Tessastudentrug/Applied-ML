@@ -9,7 +9,7 @@ class EfficientNetClassifier(nn.Module):
         weights = EfficientNet_B0_Weights.DEFAULT
         self.model = efficientnet_b0(weights=weights)
 
-        # Setup the custom classifier with the Dropout restored
+        #Setup the custom classifier with the Dropout restored
         in_features = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Sequential(
             nn.Dropout(p=0.5),  # Re-added the 0.5 Dropout
@@ -17,7 +17,6 @@ class EfficientNetClassifier(nn.Module):
         )
 
     def forward(self, x):
-        # EfficientNet expects 3 channels (RGB),
-        #  so we copy the grayscale channel 3 times
+        #EfficientNet expects 3 channels (RGB), so we copy the grayscale channel 3 times
         x = x.repeat(1, 3, 1, 1)
         return self.model(x)

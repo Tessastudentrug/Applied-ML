@@ -3,7 +3,6 @@ data_preprocessing_and_stratification.py
 
 Grabs the top 1500 highest-confidence images per emotion class from ExpW,
 runs MTCNN to detect and crop faces, converts to grayscale, saves as 224x224.
-Already ran this and pushed the output to Drive — you probably don't need to re-run.
 """
 
 import gc
@@ -15,17 +14,6 @@ import pandas as pd
 import tensorflow as tf
 from mtcnn import MTCNN
 from tqdm import tqdm
-
-# ENVIRONMENT SETUP (For Google Colab Reference Only)
-# If recreating this dataset from scratch on Google Colab,
-# the following commands were used to set up the environment
-# and extract the raw archives.
-# Do not uncomment these lines if running locally.
-# !pip install mtcnn tqdm
-# from google.colab import drive
-# drive.mount('/content/drive')
-# !7z x "./data/origin.7z.001" -o"./expw_images/"
-
 
 class ExpWPreprocessor:
     def __init__(
@@ -39,7 +27,7 @@ class ExpWPreprocessor:
 
     def build_balanced_metadata(self, samples_per_class=1500):
         """
-        The raw ExpW labels are heavily imbalanced — some emotions like 'happy'
+        The raw ExpW labels are heavily imbalanced, some emotions like 'happy'
         have way more samples than others like 'disgust'. To stop the model from
         just learning to predict the majority class, we cap each emotion at 1500
         samples and pick the ones with the highest MTCNN detection confidence,
@@ -177,5 +165,5 @@ class ExpWPreprocessor:
 
         df_final.to_csv(self.stratified_csv_path, index=False)
 
-        print(f"done — output saved to: {self.output_dir}")
+        print(f"output saved to: {self.output_dir}")
         print(f"final metadata rows: {len(df_final)}")

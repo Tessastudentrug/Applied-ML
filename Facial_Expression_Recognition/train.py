@@ -27,19 +27,15 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(args.model).to(device)
 
-    # 1. DYNAMIC IMAGE SIZE
-    # Automatically use 224 for EffNet, but keep 64 for CNN so nothing breaks!
     img_size = 224 if args.model == "effnet" else 64
 
     train_loader, val_loader, _ = get_dataloaders(
         batch_size=32,
-        image_size=img_size,  # Uses the dynamic variable here
+        image_size=img_size,
         train_split=0.8,
     )
 
-    # 2. SETUP OPTIMIZER WITH DIFFERENTIAL LEARNING RATES
     if args.model == "effnet":
-        # Protect the ImageNet weights with 1e-5, train the new classifier with 1e-3
         optimizer = torch.optim.AdamW(
             [
                 {"params": model.model.features.parameters(), "lr": 3e-5},
@@ -48,16 +44,14 @@ def main():
             weight_decay=1e-3,
         )
     else:
-        # Standard optimizer for CNN
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
 
-    # 3. RUN TRAINING
     _ = fit(
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
         device=device,
-        optimizer=optimizer,  # Pass our custom optimizer into fit()
+        optimizer=optimizer,
         max_epochs=30,
         patience=5,
     )
