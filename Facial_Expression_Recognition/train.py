@@ -1,11 +1,11 @@
 import argparse
 
 import torch
-from training.trainer import fit
+from Facial_Expression_Recognition.training.trainer import fit
 
-from data.data import get_dataloaders
-from models.cnn import CNNImageClassifier
-from models.effnet import EfficientNetClassifier
+from Facial_Expression_Recognition.data.data import get_dataloaders
+from Facial_Expression_Recognition.models.cnn import CNNImageClassifier
+from Facial_Expression_Recognition.models.effnet import EfficientNetClassifier
 
 
 def get_model(model_name, num_classes=7):

@@ -4,7 +4,7 @@ import kagglehub
 import pandas as pd
 import py7zr
 import torch
-from features.preprocessing import get_eval_transform, get_train_transform
+from Facial_Expression_Recognition.features.preprocessing import get_eval_transform, get_train_transform
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset, Subset
 
@@ -90,7 +90,7 @@ def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.1
     preprocessed_dir = os.path.join(dataset_dir, "Stratified_10k_Cleaned_224x224")
 
     if not os.path.exists(preprocessed_csv) or not os.path.isdir(preprocessed_dir):
-        from features.ExpW_preprocessor import ExpWPreprocessor
+        from Facial_Expression_Recognition.features.ExpW_preprocessor import ExpWPreprocessor
         preprocessor = ExpWPreprocessor(
             raw_metadata_path=os.path.join(dataset_dir, "label.lst"),
             stratified_csv_path=preprocessed_csv,
