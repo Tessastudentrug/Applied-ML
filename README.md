@@ -67,7 +67,6 @@ This repository contains the pipeline and API for facial expression recognition.
 │   ├── pyproject_docker.toml
 │   └── uv_docker.lock
 ├── docker-compose.yml
-├── main.py
 ├── models
 │   ├── baseline_cnn_best_weights.pth
 │   └── effnet.pth
