@@ -134,12 +134,12 @@ The training pipeline handles dataset stratification, preprocessing, and model e
 
 To train the baseline CNN:
 ```bash
-uv run Facial_Expression_Recognition.train --model cnn
+uv run python3 -m Facial_Expression_Recognition.train --model cnn
 ```
 
 To train EfficientNet-B0:
 ```bash
-uv run Facial_Expression_Recognition.train --model effnet
+uv run python3 -m Facial_Expression_Recognition.train --model effnet
 ```
 
 ### Kaggle Authentication
