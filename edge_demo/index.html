@@ -2,29 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edge AI: Facial Expression</title>
+    <title>Edge AI: Privacy-First Vision</title>
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        #result { font-size: 24px; font-weight: bold; margin-top: 20px; color: #2c3e50; }
-        input[type="file"]:disabled { opacity: 0.5; cursor: not-allowed; }
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.4);
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { margin: 0 0 10px 0; font-size: 32px; letter-spacing: -0.5px; }
+        .header p { margin: 0; color: var(--text-muted); font-size: 16px; }
+        .badge { background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+
+        .dashboard {
+            display: flex;
+            gap: 30px;
+            max-width: 900px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #334155; padding-bottom: 10px; color: var(--accent); }
+
+        input[type="file"] {
+            width: 90%;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        input[type="file"]:hover:not(:disabled) { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
+        input[type="file"]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        canvas {
+            border-radius: 8px;
+            box-shadow: 0 0 20px var(--accent-glow);
+            display: block;
+            margin: 0 auto;
+            background: #000;
+        }
+
+        #status-box {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        
+        #result-text { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        #latency-text { font-size: 13px; color: #f59e0b; font-family: monospace; }
+
+        /* Progress Bars */
+        .emotion-row { display: flex; align-items: center; margin-bottom: 12px; font-size: 14px; }
+        .emotion-label { width: 80px; font-weight: 500; color: var(--text-muted); }
+        .bar-track { flex: 1; height: 10px; background: #0f172a; border-radius: 5px; overflow: hidden; position: relative; margin: 0 15px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 5px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .emotion-pct { width: 45px; text-align: right; font-family: monospace; color: var(--text-main); }
     </style>
 </head>
-<body>  
+<body> 
 
-    <h1>Privacy-First Edge Inference</h1>
-    <p>This model runs entirely in your browser. No data is sent to the cloud.</p>
+    <div class="header">
+        <div class="badge">Local Network Offline Mode</div>
+        <h1>Privacy-First Edge Inference</h1>
+        <p>100% Local Processing. No images are sent to the cloud.</p>
+    </div>
     
-    <input type="file" id="upload" accept="image/*" disabled>
-    <br><br>
-    <canvas id="canvas" width="224" height="224" style="border:1px solid #ccc;"></canvas>
-    <div id="result">Waiting for image...</div>
-    <div id="time" style="font-size: 16px; color: #7f8c8d; margin-top: 10px;"></div>
+    <div class="dashboard">
+        <div class="panel">
+            <h2>1. Input Feed</h2>
+            <input type="file" id="upload" accept="image/*" disabled>
+            <canvas id="canvas" width="224" height="224"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>2. Neural Network Output</h2>
+            <div id="status-box">
+                <div id="result-text">Initializing Engine...</div>
+                <div id="latency-text">Awaiting input...</div>
+            </div>
+
+            <div id="distribution-bars">
+                </div>
+        </div>
+    </div>
 
     <script>
         const emotions = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]; 
-        
         let myEdgeModel = null;
+
+        // Create the UI bars dynamically
+        const barContainer = document.getElementById('distribution-bars');
+        emotions.forEach(emotion => {
+            barContainer.innerHTML += `
+                <div class="emotion-row">
+                    <div class="emotion-label">${emotion}</div>
+                    <div class="bar-track"><div class="bar-fill" id="bar-${emotion}"></div></div>
+                    <div class="emotion-pct" id="pct-${emotion}">0.0%</div>
+                </div>
+            `;
+        });
 
         function softmax(arr) {
             const maxLogit = Math.max(...arr);
@@ -34,9 +145,8 @@
         }
 
         async function loadModelOnce() {
-            document.getElementById('result').innerText = "Downloading AI Brain...";
+            document.getElementById('result-text').innerText = "Downloading AI Weights...";
             try {
-                // FIX 1: Force high precision and disable texture packing
                 const options = {
                     executionProviders: ['webgl', 'wasm'],
                     graphOptimizationLevel: 'all',
@@ -48,12 +158,10 @@
                 };
                 myEdgeModel = await ort.InferenceSession.create('./effnet_combined.onnx', options);
                 
-                document.getElementById('result').innerText = "Warming up GPU (Compiling Shaders)...";
+                document.getElementById('result-text').innerText = "Warming up WebGL GPU...";
                 
-                // FIX 2: 5-Pass Warm-up with dynamically regenerated noise
                 const dummyData = new Float32Array(224 * 224);
                 for (let run = 0; run < 5; run++) {
-                    // Regenerate noise every loop so the GPU driver doesn't cheat
                     for (let i = 0; i < dummyData.length; i++) {
                         dummyData[i] = (Math.random() * 2) - 1; 
                     }
@@ -61,12 +169,12 @@
                     await myEdgeModel.run({ input: dummyTensor });
                 }
 
-                document.getElementById('result').innerText = "AI Ready! Waiting for image...";
+                document.getElementById('result-text').innerText = "System Ready!";
                 document.getElementById('upload').disabled = false; 
                 
             } catch (e) {
                 console.error(e);
-                document.getElementById('result').innerText = "Failed to load model.";
+                document.getElementById('result-text').innerText = "Failed to load model.";
             }
         }
         
@@ -75,8 +183,7 @@
         async function runInference(tensorData) {
             if (!myEdgeModel) return;
 
-            document.getElementById('result').innerText = "Inferring...";
-            document.getElementById('time').innerText = ""; 
+            document.getElementById('result-text').innerText = "Running Inference...";
             
             try {
                 const tensor = new ort.Tensor('float32', tensorData, [1, 1, 224, 224]);
@@ -88,46 +195,56 @@
                 
                 const inferenceTimeMs = (endTime - startTime).toFixed(1); 
                 
-                // FIX 4: Dynamically target the exact output node name
                 const outputName = myEdgeModel.outputNames[0];
                 const rawOutput = Array.from(results[outputName].data);
                 const probabilities = softmax(rawOutput);
                 
                 let maxIdx = 0;
                 let maxProb = 0;
+                
+                // Update all bars
                 for (let i = 0; i < probabilities.length; i++) {
+                    const pct = (probabilities[i] * 100).toFixed(1);
+                    document.getElementById(`bar-${emotions[i]}`).style.width = `${pct}%`;
+                    document.getElementById(`pct-${emotions[i]}`).innerText = `${pct}%`;
+                    
+                    // Add a special color to the winning bar
+                    document.getElementById(`bar-${emotions[i]}`).style.background = '#334155'; 
+
                     if (probabilities[i] > maxProb) {
                         maxIdx = i;
                         maxProb = probabilities[i];
                     }
                 }
                 
+                // Highlight the winning bar in bright blue
+                document.getElementById(`bar-${emotions[maxIdx]}`).style.background = '#38bdf8';
+                
                 const confidencePct = (maxProb * 100).toFixed(1);
                 
-                document.getElementById('result').innerText = `Predicted Emotion: ${emotions[maxIdx]} (${confidencePct}%)`;
-                document.getElementById('time').innerText = `⚡ Total End-to-End Latency: ${inferenceTimeMs} ms`;
+                document.getElementById('result-text').innerText = `${emotions[maxIdx]} Detected`;
+                document.getElementById('latency-text').innerText = `⚡ End-to-End Latency: ${inferenceTimeMs} ms`;
                 
             } catch (e) {
                 console.error(e);
-                document.getElementById('result').innerText = "Error running model.";
+                document.getElementById('result-text').innerText = "Inference Error";
             }
         }
 
         document.getElementById('upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                document.getElementById('result-text').innerText = "Error: Please upload an image file!";
+                return;
+            }
             const reader = new FileReader();
             
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.getElementById('canvas');
-                    
-                    // FIX 3: Lock Canvas to explicitly use sRGB and CPU memory
-                    const ctx = canvas.getContext('2d', { 
-                        colorSpace: 'srgb',
-                        willReadFrequently: true 
-                    });
+                    const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
                     
                     ctx.clearRect(0, 0, 224, 224);
                     ctx.drawImage(img, 0, 0, 224, 224);
@@ -138,12 +255,9 @@
                         let r = imageData[i*4];
                         let g = imageData[i*4 + 1];
                         let b = imageData[i*4 + 2];
-                        
                         let gray = (0.299*r + 0.587*g + 0.114*b) / 255.0; 
-                        let normalized = (gray - 0.5) / 0.5; 
-                        floatArray[i] = normalized;
+                        floatArray[i] = (gray - 0.5) / 0.5; 
                     }
-                    
                     runInference(floatArray);
                 }
                 img.src = event.target.result;
