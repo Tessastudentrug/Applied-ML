@@ -19,8 +19,6 @@ class Emotion(str, Enum):
     sad = "sad"
     surprise = "surprise"
     neutral = "neutral"
-
-
 class PredictionResponse(BaseModel):
     """
     Response schema for emotion prediction endpoint.
@@ -29,7 +27,12 @@ class PredictionResponse(BaseModel):
     filename: str = Field(
         example="angry_man.jpg", description="Filename of image to classify"
     )
-    predicted_emotion: Emotion = Field(example="angry", description="Predicted emotion")
+    predicted_emotion: Emotion = Field(
+        example="angry", description="Predicted emotion"
+    )
+    inference_time_ms: float = Field(
+        example=42.15, description="Time taken to run model inference in milliseconds"
+    )
 
 
 class ModelsResponse(BaseModel):

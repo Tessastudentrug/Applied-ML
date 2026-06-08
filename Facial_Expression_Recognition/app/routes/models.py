@@ -1,9 +1,9 @@
 """
 API endpoints for model inference and model discovery.
 """
-
 import io
 import os
+import time
 
 import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
@@ -28,15 +28,14 @@ router = APIRouter(prefix="/models", tags=["models"])
     response_model=PredictionResponse,
     summary="Predict facial emotion",
     description=(
-        "Upload a image of a face and predict " "the emotion using your selected model"
+        "Upload a image of a face and predict "
+        "the emotion using your selected model"
     ),
     responses={
         404: {"model": ErrorResponse, "description": "Model not found"},
         413: {"model": ErrorResponse, "description": "File too large"},
         415: {"model": ErrorResponse, "description": "Unsupported Mediatype"},
-        422: {
-            "description": "Unprocessable Entity"
-        },  # FastAPI has different error schema
+        422: {"description": "Unprocessable Entity"},  # FastAPI has different error schema
         500: {"model": ErrorResponse, "description": "Internal Error"},
     },
 )
@@ -59,8 +58,10 @@ async def predict_emotion(
     if model_id not in registry.list():
         raise HTTPException(
             status_code=404,
-            detail=f"Model {model_id} not found. "
-            + f"Available models: {registry.list()}",
+            detail=(
+                f"Model {model_id} not found. "
+                f"Available models: {registry.list()}"
+            ),
         )
 
     # Use HTTP 415 (Unsupported Mediatype) if the user uploads a non-image file
@@ -78,25 +79,34 @@ async def predict_emotion(
         # Convert to Grayscale ("L") to match your training pipeline
         image = Image.open(io.BytesIO(contents)).convert("L")
 
-        # Dyamic image size: 224 for Effnet, 64 for CNN
+        # Dynamic image size: 224 for Effnet, 64 for CNN
         img_size = 224 if model_id == "effnet" else 64
         transform = get_eval_transform(image_size=img_size)
         tensor = transform(image).unsqueeze(0).to(registry.device)
         model = registry.get(model_id)
+
+        # --- START STOPWATCH ---
+        start_time = time.perf_counter()
 
         # Make the prediction without tracking gradients
         with torch.inference_mode():
             outputs = model(tensor)
             _, predicted_idx = torch.max(outputs, 1)
 
+        # --- STOP STOPWATCH ---
+        end_time = time.perf_counter()
+
+        # Calculate inference time in milliseconds rounded to 2 decimals
+        inference_time_ms = round((end_time - start_time) * 1000, 2)
+
         emotion = EMOTIONS[predicted_idx.item()]
 
         # Return a clean JSON response
-        #  (HTTP 200 is default for successful FastAPI returns)
-
+        # (HTTP 200 is default for successful FastAPI returns)
         return PredictionResponse(
             filename=file.filename,
             predicted_emotion=emotion,
+            inference_time_ms=inference_time_ms,
         )
 
     except HTTPException:
