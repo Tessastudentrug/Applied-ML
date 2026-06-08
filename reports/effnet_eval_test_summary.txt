@@ -1,0 +1,21 @@
+Final Test Set Evaluation
+=========================
+
+Model: effnet_eval
+Test loss: 1.3515
+Test accuracy: 0.5209
+Test F1-score: 0.5108
+
+              precision    recall  f1-score   support
+
+           0       0.54      0.60      0.57       300
+           1       0.34      0.34      0.34       300
+           2       0.40      0.40      0.40       210
+           3       0.69      0.76      0.72       300
+           4       0.59      0.33      0.42       300
+           5       0.62      0.58      0.60       300
+           6       0.46      0.60      0.52       300
+
+    accuracy                           0.52      2010
+   macro avg       0.52      0.52      0.51      2010
+weighted avg       0.53      0.52      0.52      2010
