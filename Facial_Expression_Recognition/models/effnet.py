@@ -19,7 +19,7 @@ class EfficientNetClassifier(nn.Module):
     - Handles grayscale input by converting to 3-channel format
     """
 
-    def __init__(self, num_classes=7):
+    def __init__(self, num_classes=7, dropout=0.5):
         super().__init__()
 
         weights = EfficientNet_B0_Weights.DEFAULT
@@ -28,7 +28,7 @@ class EfficientNetClassifier(nn.Module):
         # Setup the custom classifier with the Dropout restored
         in_features = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Sequential(
-            nn.Dropout(p=0.5),  # Re-added the 0.5 Dropout
+            nn.Dropout(p=dropout), 
             nn.Linear(in_features, num_classes),
         )
 

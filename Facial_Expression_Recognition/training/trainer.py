@@ -9,6 +9,7 @@ Includes:
 import time
 
 import numpy as np
+import optuna
 import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score, f1_score
@@ -81,6 +82,8 @@ def fit(
     clip_grad_norm: float = None,
     patience: int = 3,
     save_path: str = None,
+    trial=None,
+    global_step_offset: int = 0,
 ) -> list:
     """
     Train a PyTorch model with validation monitoring and early stopping.
@@ -105,6 +108,7 @@ def fit(
         clip_grad_norm: max gradient norm (optional)
         patience: early stopping patience based on F1 score
         save_path: optional path to save best model
+        trial: 
 
     Returns:
         List of training history dictionaries per epoch
@@ -161,6 +165,11 @@ def fit(
             "time_s": dt,
         }
         hist.append(record)
+        if trial is not None:
+            trial.report(val["f1"], epoch + global_step_offset)
+
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
 
         print(
             f"epoch {epoch:02d} | "

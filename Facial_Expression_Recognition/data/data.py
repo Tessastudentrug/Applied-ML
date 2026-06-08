@@ -104,7 +104,21 @@ def get_dataset_dir():
 
     return dataset_dir
 
+def get_datasets(image_size=64):
+    dataset_dir = get_dataset_dir()
 
+    dataset_train = FERImageDataset(
+        dataset_dir,
+        transform=get_train_transform(image_size=image_size),
+    )
+
+    dataset_eval = FERImageDataset(
+        dataset_dir,
+        transform=get_eval_transform(image_size=image_size),
+    )
+
+    return dataset_train, dataset_eval
+    
 def get_dataloaders(batch_size=32, image_size=64, train_split=0.7, val_split=0.10):
     """
     Create train/validation/test DataLoaders.
