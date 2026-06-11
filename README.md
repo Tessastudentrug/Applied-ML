@@ -125,9 +125,10 @@ uv sync
 ```
 ### Running the Privacy-First Edge UI (Browser)
 For consumer-facing, privacy-preserving inference, this project includes an ONNX-powered web interface. No Python backend is required for this component.
-1. Navigate to the frontend directory containing the `index.html` file.
-2. Launch a local web server (e.g., using VS Code Live Server, or running `python -m http.server 8080`).
-3. Open the port in your browser. The WebGL backend will automatically download the frozen ONNX weights and execute the 5-pass hardware warm-up loop.
+1. Navigate to the edge_demo directory containing the `index.html` file:
+`cd edge_demo`
+3. Launch a local web server (e.g., using VS Code Live Server, or running `python -m http.server 8080`).
+4. Open the port in your browser. The WebGL backend will automatically download the frozen ONNX weights and execute the 5-pass hardware warm-up loop.
 
 ### Running the API
 
