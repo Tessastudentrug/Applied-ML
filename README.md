@@ -1,6 +1,12 @@
-# Facial Expression Recognition API
+# Facial Expression Recognition: Edge AI & Cloud API
 
-This repository contains the pipeline and API for facial expression recognition. It handles class imbalance in stratified datasets and deploys CNNs (Baseline CNN and EfficientNet-B0) via a FastAPI backend.
+This repository contains a full-stack, dual-architecture pipeline for facial expression recognition. 
+
+To ensure optimal performance and privacy, this project features two distinct deployment methods:
+1. **Privacy-First Edge UI:** A browser-based application utilizing an ONNX-compiled EfficientNet to run zero-trust inference locally via WebGL. 
+2. **RESTful Cloud API:** A FastAPI-based backend designed for B2B integration and bulk processing.
+
+Additionally, the training pipeline implements a Data-Centric AI approach. It handles severe ExpW class imbalance by extracting the top 1,500 highest-confidence labels and dynamically cropping precise facial geometries using MTCNN prior to training.
 
 ## Repository Map
 ```text
@@ -67,9 +73,14 @@ This repository contains the pipeline and API for facial expression recognition.
 │   ├── pyproject_docker.toml
 │   └── uv_docker.lock
 ├── docker-compose.yml
+├── edge_demo
+│   ├── index.html
+│   └── effnet_combined.onnx
+├── export_onnx.py
 ├── models
 │   ├── baseline_cnn_best_weights.pth
 │   └── effnet.pth
+├── openapi.yaml
 ├── pyproject.toml
 ├── tests
 │   ├── __init__.py
@@ -112,6 +123,11 @@ This project uses `uv` for dependency management. For instructions on how to ins
 ```bash
 uv sync
 ```
+### Running the Privacy-First Edge UI (Browser)
+For consumer-facing, privacy-preserving inference, this project includes an ONNX-powered web interface. No Python backend is required for this component.
+1. Navigate to the frontend directory containing the `index.html` file.
+2. Launch a local web server (e.g., using VS Code Live Server, or running `python -m http.server 8080`).
+3. Open the port in your browser. The WebGL backend will automatically download the frozen ONNX weights and execute the 5-pass hardware warm-up loop.
 
 ### Running the API
 
